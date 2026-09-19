@@ -6,9 +6,16 @@ export function loginPage() {
   app.innerHTML = `
     <div class="login-page">
 
-      <header class="login-header">
-        <div class="login-logo"></div>
-      </header>
+    <header class="login-header">
+      <div class="login-logo">
+        <a href="/" data-link class="logo-link">
+        <img src="assets/SocialMediaLogo.png"
+        alt="Social Media Logo"
+        class="logo-image"
+        />
+        </a>
+     </div>
+    </header>
 
       <main class="login-main">
 

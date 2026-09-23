@@ -229,39 +229,4 @@ function renderPosts(posts) {
         </article>
       `;
     })
-    .join("");
-
-    function setupPostInteractions() {
-      const likeButtons = document.querySelectorAll(".post-like-button");
-
-      likeButtons.forEach((button) => {
-        button.addEventListener("click", async () => {
-          const postId = button.dataset.postId;
-          const icon = button.querySelector(".like-icon");
-          const count = button.querySelector(".like-count");
-
-          const isLiked = button.classList.contains("liked");
-
-          try {
-            await reactToPost(postId);
-
-            if (isLiked) {
-              icon.src = "assets/LikeStandard.png";
-
-              count.textContent = Math.max(0, Number(count.textContent) - 1);
-
-              button.classList.remove("liked");
-            } else {
-              icon.src = "assets/LikePressed.png";
-
-              count.textContent = Number(count.textContent) + 1;
-
-              button.classList.add("liked");
-            }
-          } catch (error) {
-            console.error("Could not update like:", error);
-          }
-        });
-      });
-    }
 }

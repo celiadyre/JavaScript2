@@ -1,5 +1,6 @@
 import { createPost } from "../api/posts/createPost.js";
 import { updatePost } from "../api/posts/updatePost.js";
+import { deletePost } from "../api/posts/deletePost.js";
 import { getPost } from "../api/posts/getPost.js";
 import { load } from "../storage/load.js";
 
@@ -7,6 +8,7 @@ export async function postFormPage() {
   const app = document.querySelector("#app");
 
   const params = new URLSearchParams(window.location.search);
+
   const postId = params.get("id");
 
   const profile = load("profile");
@@ -19,7 +21,9 @@ export async function postFormPage() {
     try {
       post = await getPost(postId);
 
-      if (post.author?.name !== profile?.name) {
+      const isOwner = post.author?.name === profile?.name;
+
+      if (!isOwner) {
         app.innerHTML = `
           <p>You cannot edit this post.</p>
         `;
@@ -42,7 +46,9 @@ function renderPostForm(post, profile, isEditing) {
   const app = document.querySelector("#app");
 
   const imageUrl = post?.media?.url || "";
+
   const altText = post?.media?.alt || "";
+
   const caption = post?.body || "";
 
   app.innerHTML = `
@@ -51,41 +57,46 @@ function renderPostForm(post, profile, isEditing) {
       <header class="feed-header">
 
         <a
-          href="/feed"
+          href="${isEditing ? `/post?id=${post.id}` : "/feed"}"
           data-link
           class="feed-search-button"
-          aria-label="Back to feed"
+          aria-label="Back"
         >
           ←
         </a>
 
-        <a
-          href="/feed"
-          data-link
-          class="feed-logo"
-        >
-          <img
-            src="assets/SocialMediaLogo.png"
-            alt="Social Media Logo"
-          >
-        </a>
+
+        <div class="feed-logo">
+
+          <a href="/feed" data-link>
+
+            <img
+              src="assets/SocialMediaLogo.png"
+              alt="Social Media Logo"
+            >
+
+          </a>
+
+        </div>
+
 
         <a
           href="/profile"
           data-link
           class="feed-profile"
-          aria-label="My profile"
         >
+
           ${
             profile?.avatar?.url
               ? `
                 <img
                   src="${profile.avatar.url}"
-                  alt="${profile.name}"
+                  alt="${profile.avatar.alt || profile.name}"
                 >
               `
               : ""
           }
+
         </a>
 
       </header>
@@ -119,42 +130,50 @@ function renderPostForm(post, profile, isEditing) {
 
         <form id="post-form">
 
-          <div class="post-media-box">
+          <div class="post-image-preview">
 
-            <div
-              id="image-preview"
-              class="post-image-preview"
-            >
-              ${
-                imageUrl
-                  ? `
-                    <img
-                      src="${imageUrl}"
-                      alt="${altText}"
-                    >
-                  `
-                  : `
-                    <span>Add image</span>
-                  `
-              }
-            </div>
-
-            <input
-              type="url"
-              id="post-image-url"
-              class="post-form-input"
-              placeholder="Image URL"
-              value="${imageUrl}"
-            >
+            ${
+              imageUrl
+                ? `
+                  <img
+                    src="${imageUrl}"
+                    alt="${altText}"
+                  >
+                `
+                : `
+                  <span>Add image</span>
+                `
+            }
 
           </div>
+
+
+          ${
+            !isEditing
+              ? `
+                <input
+                  type="url"
+                  id="post-image-url"
+                  class="post-form-input"
+                  placeholder="Image URL"
+                  value="${imageUrl}"
+                >
+              `
+              : `
+                <input
+                  type="hidden"
+                  id="post-image-url"
+                  value="${imageUrl}"
+                >
+              `
+          }
 
 
           <input
             type="text"
             id="post-caption"
             class="post-form-input"
-            placeholder="Add caption"
+            placeholder="${isEditing ? "Edit caption" : "Add caption"}"
             value="${caption}"
             required
           >
@@ -164,7 +183,7 @@ function renderPostForm(post, profile, isEditing) {
             type="text"
             id="post-alt"
             class="post-form-input"
-            placeholder="Add alt text"
+            placeholder="${isEditing ? "Edit alt text" : "Add alt text"}"
             value="${altText}"
           >
 
@@ -179,8 +198,23 @@ function renderPostForm(post, profile, isEditing) {
             type="submit"
             class="post-submit-button"
           >
-            ${isEditing ? "Save changes" : "Post to feed"}
+            ${isEditing ? "Update" : "Post to feed"}
           </button>
+
+
+          ${
+            isEditing
+              ? `
+                <button
+                  type="button"
+                  id="delete-post-button"
+                  class="delete-post-button"
+                >
+                  Delete post
+                </button>
+              `
+              : ""
+          }
 
         </form>
 
@@ -193,48 +227,28 @@ function renderPostForm(post, profile, isEditing) {
 function setupPostForm(postId, isEditing) {
   const form = document.querySelector("#post-form");
 
+  const captionInput = document.querySelector("#post-caption");
+
+  const altInput = document.querySelector("#post-alt");
+
   const imageInput = document.querySelector("#post-image-url");
 
-  const imagePreview = document.querySelector("#image-preview");
-
   const errorElement = document.querySelector("#post-form-error");
-
-  imageInput.addEventListener("input", () => {
-    const imageUrl = imageInput.value.trim();
-
-    if (imageUrl) {
-      imagePreview.innerHTML = `
-        <img
-          src="${imageUrl}"
-          alt="Post preview"
-        >
-      `;
-    } else {
-      imagePreview.innerHTML = `
-        <span>Add image</span>
-      `;
-    }
-  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const caption = captionInput.value.trim();
+
+    const altText = altInput.value.trim();
+
     const imageUrl = imageInput.value.trim();
-
-    const caption = document.querySelector("#post-caption").value.trim();
-
-    const altText = document.querySelector("#post-alt").value.trim();
 
     if (!caption) {
       errorElement.textContent = "Please add a caption.";
+
       return;
     }
-
-    /*
-      Noroff requires a title.
-      Since the design does not have a separate
-      title field, we create one from the caption.
-    */
 
     const title =
       caption.length > 60 ? `${caption.substring(0, 60)}...` : caption;
@@ -268,6 +282,36 @@ function setupPostForm(postId, isEditing) {
 
       window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (error) {
+      errorElement.textContent = error.message;
+    }
+  });
+
+  if (isEditing) {
+    setupDeleteButton(postId);
+  }
+}
+
+function setupDeleteButton(postId) {
+  const deleteButton = document.querySelector("#delete-post-button");
+
+  deleteButton.addEventListener("click", async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this post?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deletePost(postId);
+
+      history.pushState({}, "", "/feed");
+
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    } catch (error) {
+      const errorElement = document.querySelector("#post-form-error");
+
       errorElement.textContent = error.message;
     }
   });

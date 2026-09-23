@@ -1,6 +1,5 @@
 import { getPost } from "../api/posts/getPost.js";
 import { addComment } from "../api/posts/addComment.js";
-import { updatePost } from "../api/posts/updatePost.js";
 import { load } from "../storage/load.js";
 
 export async function postPage() {
@@ -26,12 +25,7 @@ export async function postPage() {
     const post = await getPost(postId);
 
     renderPost(post, profile);
-
     setupCommentForm(post.id);
-
-    if (profile?.name === post.author?.name) {
-      setupEditButton(post);
-    }
   } catch (error) {
     app.innerHTML = `
       <p class="post-error">${error.message}</p>
@@ -43,11 +37,9 @@ function renderPost(post, profile) {
   const app = document.querySelector("#app");
 
   const username = post.author?.name || "Unknown user";
-
   const avatar = post.author?.avatar?.url;
 
   const image = post.media?.url;
-
   const imageAlt = post.media?.alt || post.title || "Post image";
 
   const comments = post.comments || [];
@@ -172,19 +164,16 @@ function renderPost(post, profile) {
           isOwner
             ? `
               <div class="edit-button-container">
-                <button
-                  type="button"
-                  id="edit-post-button"
+
+                <a
+                  href="/edit-post?id=${post.id}"
+                  data-link
                   class="edit-post-button"
                 >
                   Edit
-                </button>
-              </div>
+                </a>
 
-              <div
-                id="edit-post-container"
-                class="edit-post-container"
-              ></div>
+              </div>
             `
             : ""
         }
@@ -253,6 +242,7 @@ function renderPost(post, profile) {
     </div>
   `;
 }
+
 function setupCommentForm(postId) {
   const form = document.querySelector("#comment-form");
 
@@ -278,101 +268,7 @@ function setupCommentForm(postId) {
       const profile = load("profile");
 
       renderPost(post, profile);
-
       setupCommentForm(post.id);
-
-      if (profile?.name === post.author?.name) {
-        setupEditButton(post);
-      }
-    } catch (error) {
-      errorElement.textContent = error.message;
-    }
-  });
-}
-function setupEditButton(post) {
-  const editButton = document.querySelector("#edit-post-button");
-
-  const container = document.querySelector("#edit-post-container");
-
-  editButton.addEventListener("click", () => {
-    container.innerHTML = `
-      <form id="edit-post-form">
-
-        <input
-          type="text"
-          id="edit-title"
-          value="${post.title || ""}"
-          placeholder="Title"
-          required
-        >
-
-        <textarea
-          id="edit-body"
-          placeholder="Post text"
-        >${post.body || ""}</textarea>
-
-        <input
-          type="url"
-          id="edit-image"
-          value="${post.media?.url || ""}"
-          placeholder="Image URL"
-        >
-
-        <button
-          type="submit"
-          class="save-post-button"
-        >
-          Save
-        </button>
-
-      </form>
-
-      <p id="edit-error"></p>
-    `;
-
-    setupEditForm(post);
-  });
-}
-function setupEditForm(post) {
-  const form = document.querySelector("#edit-post-form");
-
-  const errorElement = document.querySelector("#edit-error");
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const title = document.querySelector("#edit-title").value.trim();
-
-    const body = document.querySelector("#edit-body").value.trim();
-
-    const imageUrl = document.querySelector("#edit-image").value.trim();
-
-    const updatedPost = {
-      title,
-      body,
-    };
-
-    if (imageUrl) {
-      updatedPost.media = {
-        url: imageUrl,
-        alt: title,
-      };
-    } else {
-      updatedPost.media = null;
-    }
-
-    try {
-      await updatePost(post.id, updatedPost);
-
-      const refreshedPost = await getPost(post.id);
-
-      const profile = load("profile");
-
-      renderPost(refreshedPost, profile);
-
-      setupCommentForm(refreshedPost.id);
-
-      setupEditButton(refreshedPost);
     } catch (error) {
       errorElement.textContent = error.message;
     }

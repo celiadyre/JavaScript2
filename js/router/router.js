@@ -3,6 +3,7 @@ import { registerPage } from "../pages/register.js";
 import { feedPage } from "../pages/feed.js";
 import { postPage } from "../pages/post.js";
 import { profilePage } from "../pages/profile.js";
+import { postFormPage } from "../pages/postForm.js";
 
 export function router() {
   const path = window.location.pathname;
@@ -27,6 +28,14 @@ export function router() {
 
     case "/profile":
       profilePage();
+      break;
+
+    case "/create":
+      postFormPage();
+      break;
+
+    case "/edit-post":
+      postFormPage();
       break;
 
     default:

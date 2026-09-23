@@ -1,4 +1,5 @@
 import { getPosts } from "../api/posts/getPosts.js";
+import { reactToPost } from "../api/posts/reactToPost.js";
 import { load } from "../storage/load.js";
 
 export async function feedPage() {
@@ -14,11 +15,19 @@ export async function feedPage() {
           class="feed-search-button"
           id="feed-search-button"
           aria-label="Search"
+          type="button"
         >
           <span class="search-icon"></span>
         </button>
 
-        <div class="feed-logo"></div>
+        <div class="feed-logo">
+          <a href="/feed" data-link>
+            <img
+              src="assets/SocialMediaLogo.png"
+              alt="Social Media Logo"
+            >
+          </a>
+        </div>
 
         <a
           href="/profile"
@@ -57,15 +66,14 @@ export async function feedPage() {
 
       <div class="add-post-container">
 
-        <button
-          id="create-post-button"
+        <a
+          href="/create"
+          data-link
           class="add-post-button"
-          type="button"
         >
           <span class="add-post-plus">+</span>
-
           <span>Add to feed</span>
-        </button>
+        </a>
 
       </div>
 
@@ -76,6 +84,7 @@ export async function feedPage() {
     const posts = await getPosts();
 
     renderPosts(posts);
+    setupPostInteractions();
   } catch (error) {
     document.querySelector("#posts-container").innerHTML = `
       <p class="feed-error">
@@ -122,6 +131,7 @@ function renderPosts(posts) {
           >
 
             <div class="post-author-avatar">
+
               ${
                 avatar
                   ? `
@@ -132,6 +142,7 @@ function renderPosts(posts) {
                   `
                   : ""
               }
+
             </div>
 
             <span class="post-author-name">
@@ -180,6 +191,7 @@ function renderPosts(posts) {
                 : ""
             }
 
+
             ${
               post.body
                 ? `
@@ -190,37 +202,47 @@ function renderPosts(posts) {
                 : ""
             }
 
-             <div class="post-engagement">
 
-  <button
-    class="post-like-button"
-    type="button"
-    data-post-id="${post.id}"
-    aria-label="Like post"
-  >
-    <img
-      src="assets/LikeStandard.png"
-      alt=""
-      class="like-icon"
-    >
-    <span class="like-count">${reactionCount}</span>
-  </button>
+            <div class="post-engagement">
 
-  <a
-    href="/post?id=${post.id}"
-    data-link
-    class="post-comments"
-    aria-label="View comments"
-  >
-    <img
-      src="assets/Comment.png"
-      alt=""
-      class="comment-icon"
-    >
-    <span>${commentCount}</span>
-  </a>
+              <button
+                class="post-like-button"
+                type="button"
+                data-post-id="${post.id}"
+                aria-label="Like post"
+              >
 
-</div>
+                <img
+                  src="assets/LikeStandard.png"
+                  alt="Like"
+                  class="like-icon"
+                >
+
+                <span class="like-count">
+                  ${reactionCount}
+                </span>
+
+              </button>
+
+
+              <a
+                href="/post?id=${post.id}"
+                data-link
+                class="post-comments"
+                aria-label="View comments"
+              >
+
+                <img
+                  src="assets/Comment.png"
+                  alt="Comments"
+                  class="comment-icon"
+                >
+
+                <span>
+                  ${commentCount}
+                </span>
+
+              </a>
 
             </div>
 
@@ -229,4 +251,41 @@ function renderPosts(posts) {
         </article>
       `;
     })
+    .join("");
+}
+
+function setupPostInteractions() {
+  const likeButtons = document.querySelectorAll(".post-like-button");
+
+  likeButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      const postId = button.dataset.postId;
+
+      const icon = button.querySelector(".like-icon");
+
+      const count = button.querySelector(".like-count");
+
+      const isLiked = button.classList.contains("liked");
+
+      try {
+        await reactToPost(postId);
+
+        if (isLiked) {
+          icon.src = "assets/LikeStandard.png";
+
+          count.textContent = Math.max(0, Number(count.textContent) - 1);
+
+          button.classList.remove("liked");
+        } else {
+          icon.src = "assets/LikePressed.png";
+
+          count.textContent = Number(count.textContent) + 1;
+
+          button.classList.add("liked");
+        }
+      } catch (error) {
+        console.error("Could not update like:", error);
+      }
+    });
+  });
 }

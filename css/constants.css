@@ -1,0 +1,42 @@
+:root {
+  /* Font */
+  --font-main: "Instrument Serif", serif;
+
+  /* Colors */
+  --color-dark-green: #3A4E48;
+  --color-green: #6A7B76;
+  --color-light-green: #8B9D83;
+  --color-beige: #BEB0A7;
+  --color-red: #D86464;
+
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-placeholder: #D9D9D9;
+
+  /* Font Sizes */
+  --font-large: 32px;
+  --font-medium: 20px;
+  --font-small: 13px;
+
+  /* Border Radius */
+  --radius-small: 20px;
+  --radius-medium: 30px;
+  --radius-large: 35px;
+  --radius-round: 50%;
+
+  /* Spacing */
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+
+  /* App */
+  --app-max-width: 480px;
+
+  /* Header */
+  --header-height: 92px;
+
+  /* Input/Button Height */
+  --control-height: 56px;
+}

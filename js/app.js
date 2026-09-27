@@ -1,5 +1,7 @@
 import { router } from "./router/router.js";
 
+export const BASE_PATH = "/JavaScript2";
+
 document.addEventListener("DOMContentLoaded", () => {
   router();
 });
@@ -15,7 +17,7 @@ document.addEventListener("click", (event) => {
 
   const href = link.getAttribute("href");
 
-  history.pushState({}, "", href);
+  history.pushState({}, "", `${BASE_PATH}${href}`);
 
   router();
 });

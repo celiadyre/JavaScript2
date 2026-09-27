@@ -5,8 +5,18 @@ import { postPage } from "../pages/post.js";
 import { profilePage } from "../pages/profile.js";
 import { postFormPage } from "../pages/postForm.js";
 
+const BASE_PATH = "/JavaScript2";
+
 export function router() {
-  const path = window.location.pathname;
+  let path = window.location.pathname;
+
+  if (path.startsWith(BASE_PATH)) {
+    path = path.slice(BASE_PATH.length);
+  }
+
+  if (!path) {
+    path = "/";
+  }
 
   switch (path) {
     case "/":
@@ -50,7 +60,13 @@ function renderNotFound() {
     <main>
       <h1>404</h1>
       <p>Page not found.</p>
-      <a href="/feed" data-link>Back to feed</a>
+
+      <a
+        href="/feed"
+        data-link
+      >
+        Back to feed
+      </a>
     </main>
   `;
 }

@@ -894,7 +894,9 @@ h3 {
 }
 
 .profile-username,
-.profile-followers {
+.profile-followers,
+.profile-follow-button,
+.profile-follow-button.following {
   width: 100%;
 
   min-height: 52px;
@@ -916,11 +918,19 @@ h3 {
   background: var(--color-beige);
 }
 
-.profile-followers {
+.profile-followers,
+.profile-follow-button {
   margin-bottom: 24px;
 
   background: var(--color-dark-green);
   color: var(--color-beige);
+}
+
+.profile-follow-button.following {
+  margin-bottom: 24px;
+
+  background: var(--color-light-green);
+  color: var(--color-black);
 }
 
 .profile-bio {

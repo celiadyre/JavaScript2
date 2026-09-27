@@ -1,5 +1,7 @@
 import { getProfile } from "../api/profiles/getProfile.js";
 import { getProfilePosts } from "../api/profiles/getProfilePosts.js";
+import { followProfile } from "../api/profiles/followProfile.js";
+import { unfollowProfile } from "../api/profiles/unfollowProfile.js";
 import { load } from "../storage/load.js";
 
 export async function profilePage() {
@@ -19,7 +21,6 @@ export async function profilePage() {
         Profile not found.
       </p>
     `;
-
     return;
   }
 
@@ -37,7 +38,16 @@ export async function profilePage() {
 
     const isOwnProfile = loggedInProfile?.name === profile.name;
 
-    renderProfile(profile, posts, isOwnProfile);
+    const isFollowing =
+      profile.followers?.some(
+        (follower) => follower.name === loggedInProfile?.name,
+      ) || false;
+
+    renderProfile(profile, posts, isOwnProfile, isFollowing);
+
+    if (!isOwnProfile) {
+      setupFollowButton(profile.name, loggedInProfile);
+    }
   } catch (error) {
     app.innerHTML = `
       <p class="profile-error">
@@ -47,7 +57,7 @@ export async function profilePage() {
   }
 }
 
-function renderProfile(profile, posts, isOwnProfile) {
+function renderProfile(profile, posts, isOwnProfile, isFollowing) {
   const app = document.querySelector("#app");
 
   const avatar = profile.avatar?.url;
@@ -115,6 +125,22 @@ function renderProfile(profile, posts, isOwnProfile) {
 
 
         ${
+          !isOwnProfile
+            ? `
+              <button
+                type="button"
+                id="profile-follow-button"
+                class="profile-follow-button ${isFollowing ? "following" : ""}"
+                data-following="${isFollowing}"
+              >
+                ${isFollowing ? "Unfollow" : "Follow"}
+              </button>
+            `
+            : ""
+        }
+
+
+        ${
           profile.bio
             ? `
               <p class="profile-bio">
@@ -172,6 +198,8 @@ function createProfilePost(post, isOwnProfile) {
                 <img
                   src="${image}"
                   alt="${imageAlt}"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
                 >
               `
               : `
@@ -206,4 +234,43 @@ function createProfilePost(post, isOwnProfile) {
 
     </article>
   `;
+}
+
+function setupFollowButton(profileName, loggedInProfile) {
+  const button = document.querySelector("#profile-follow-button");
+
+  if (!button) {
+    return;
+  }
+
+  button.addEventListener("click", async () => {
+    const isFollowing = button.dataset.following === "true";
+
+    button.disabled = true;
+
+    try {
+      if (isFollowing) {
+        await unfollowProfile(profileName);
+      } else {
+        await followProfile(profileName);
+      }
+
+      const updatedProfile = await getProfile(profileName);
+
+      const posts = await getProfilePosts(profileName);
+
+      const nowFollowing =
+        updatedProfile.followers?.some(
+          (follower) => follower.name === loggedInProfile?.name,
+        ) || false;
+
+      renderProfile(updatedProfile, posts, false, nowFollowing);
+
+      setupFollowButton(profileName, loggedInProfile);
+    } catch (error) {
+      console.error("Could not update follow:", error);
+
+      button.disabled = false;
+    }
+  });
 }

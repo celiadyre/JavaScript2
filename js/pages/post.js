@@ -217,7 +217,7 @@ function renderPost(post, profile) {
             <input
               type="text"
               id="comment-input"
-              placeholder="Add comment"
+              placeholder="Write a comment..."
               required
             >
 

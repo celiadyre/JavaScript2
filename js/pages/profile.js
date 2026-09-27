@@ -44,7 +44,7 @@ export async function profilePage() {
         (follower) => follower.name === loggedInProfile?.name,
       ) || false;
 
-    renderProfile(profile, posts, false, isOwnProfile, isFollowing);
+    renderProfile(profile, posts, isOwnProfile, isFollowing);
 
     removeBrokenImages();
 

@@ -1,6 +1,7 @@
 import { getPosts } from "../api/posts/getPosts.js";
 import { reactToPost } from "../api/posts/reactToPost.js";
 import { load } from "../storage/load.js";
+import { removeBrokenImages } from "../utils/removeBrokenImages.js";
 
 let allPosts = [];
 
@@ -168,7 +169,7 @@ export async function feedPage() {
     allPosts = posts;
 
     renderPosts(posts);
-
+    removeBrokenImages();
     setupPostInteractions();
     setupSearch();
   } catch (error) {
@@ -183,25 +184,29 @@ export async function feedPage() {
 function renderPosts(posts) {
   const container = document.querySelector("#posts-container");
 
-  if (!posts.length) {
+  const postsWithImages = posts.filter((post) => post.media?.url);
+
+  if (!postsWithImages.length) {
     container.innerHTML = `
       <p class="feed-empty">
-        No posts yet.
+        No posts with images yet.
       </p>
     `;
 
     return;
   }
 
-  container.innerHTML = posts
+  container.innerHTML = postsWithImages
     .map((post) => {
       const username = post.author?.name || "Unknown user";
 
       const avatar = post.author?.avatar?.url;
 
-      const image = post.media?.url;
+      const image = post.media.url;
 
       const imageAlt = post.media?.alt || post.title || "Post image";
+
+      const caption = post.body || post.title || "";
 
       const reactionCount = post._count?.reactions || 0;
 
@@ -246,19 +251,14 @@ function renderPosts(posts) {
 
             <div class="post-image-container">
 
-              ${
-                image
-                  ? `
-                    <img
-                      src="${image}"
-                      alt="${imageAlt}"
-                      class="post-image"
-                    >
-                  `
-                  : `
-                    <div class="post-image-placeholder"></div>
-                  `
-              }
+              <img
+                src="${image}"
+                alt="${imageAlt}"
+                class="post-image"
+                data-remove-on-error=".feed-post"
+                referrerpolicy="no-referrer"
+                loading="lazy"
+              >
 
             </div>
 
@@ -268,21 +268,10 @@ function renderPosts(posts) {
           <div class="post-content">
 
             ${
-              post.title
-                ? `
-                  <h2 class="post-title">
-                    ${post.title}
-                  </h2>
-                `
-                : ""
-            }
-
-
-            ${
-              post.body
+              caption
                 ? `
                   <p class="post-body">
-                    ${post.body}
+                    ${caption}
                   </p>
                 `
                 : ""
@@ -324,7 +313,7 @@ function renderPosts(posts) {
                   class="comment-icon"
                 >
 
-                <span>
+                <span class="comment-count">
                   ${commentCount}
                 </span>
 
@@ -338,6 +327,8 @@ function renderPosts(posts) {
       `;
     })
     .join("");
+
+  removeBrokenImages();
 }
 
 function setupSearch() {
@@ -411,7 +402,9 @@ function filterPosts(posts, searchTerm) {
 function renderSearchResults(posts) {
   const container = document.querySelector("#search-results");
 
-  if (!posts.length) {
+  const postsWithImages = posts.filter((post) => post.media?.url);
+
+  if (!postsWithImages.length) {
     container.innerHTML = `
       <p class="search-no-results">
         No posts found.
@@ -421,9 +414,9 @@ function renderSearchResults(posts) {
     return;
   }
 
-  container.innerHTML = posts
+  container.innerHTML = postsWithImages
     .map((post) => {
-      const image = post.media?.url;
+      const image = post.media.url;
 
       const imageAlt = post.media?.alt || post.title || "Post image";
 
@@ -434,25 +427,20 @@ function renderSearchResults(posts) {
           class="search-result-card"
           aria-label="Open ${post.title || "post"}"
         >
-
-          ${
-            image
-              ? `
-                <img
-                  src="${image}"
-                  alt="${imageAlt}"
-                >
-              `
-              : `
-                <div class="search-result-placeholder">
-                </div>
-              `
-          }
-
+          <img
+            src="${image}"
+            alt="${imageAlt}"
+            class="search-result-image"
+            data-remove-on-error=".search-result-card"
+            referrerpolicy="no-referrer"
+            loading="lazy"
+          >
         </a>
       `;
     })
     .join("");
+
+  removeBrokenImages();
 }
 
 function setupPostInteractions() {

@@ -3,6 +3,7 @@ import { getProfilePosts } from "../api/profiles/getProfilePosts.js";
 import { followProfile } from "../api/profiles/followProfile.js";
 import { unfollowProfile } from "../api/profiles/unfollowProfile.js";
 import { load } from "../storage/load.js";
+import { removeBrokenImages } from "../utils/removeBrokenImages.js";
 
 export async function profilePage() {
   const app = document.querySelector("#app");
@@ -43,7 +44,9 @@ export async function profilePage() {
         (follower) => follower.name === loggedInProfile?.name,
       ) || false;
 
-    renderProfile(profile, posts, isOwnProfile, isFollowing);
+    renderProfile(profile, posts, false, isOwnProfile, isFollowing);
+
+    removeBrokenImages();
 
     if (!isOwnProfile) {
       setupFollowButton(profile.name, loggedInProfile);
@@ -65,6 +68,8 @@ function renderProfile(profile, posts, isOwnProfile, isFollowing) {
   const avatarAlt = profile.avatar?.alt || profile.name;
 
   const followerCount = profile._count?.followers || 0;
+
+  const postsWithImages = posts.filter((post) => post.media?.url);
 
   app.innerHTML = `
     <div class="profile-page">
@@ -157,16 +162,15 @@ function renderProfile(profile, posts, isOwnProfile, isFollowing) {
         >
 
           ${
-            posts.length
-              ? posts
+            postsWithImages.length
+              ? postsWithImages
                   .map((post) => createProfilePost(post, isOwnProfile))
                   .join("")
               : `
-                <p class="profile-no-posts">
-                  No posts yet.
-                </p>
-              `
-          }
+            <p class="profile-no-posts">
+              No posts yet.
+            </p>
+          `}
 
         </section>
 
@@ -198,6 +202,7 @@ function createProfilePost(post, isOwnProfile) {
                 <img
                   src="${image}"
                   alt="${imageAlt}"
+                  data-remove-on-error=".profile-post"
                   referrerpolicy="no-referrer"
                   loading="lazy"
                 >

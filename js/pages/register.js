@@ -82,7 +82,7 @@ export function registerPage() {
     try {
       await register(name, email, password);
 
-      history.pushState({}, "", "/login");
+      history.pushState({}, "", "/JavaScript2/login");
 
       window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (error) {

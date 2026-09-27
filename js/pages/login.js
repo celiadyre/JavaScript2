@@ -77,7 +77,7 @@ export function loginPage() {
     try {
       await login(email, password);
 
-      history.pushState({}, "", "/feed");
+      history.pushState({}, "", "/JavaScript2/feed");
       window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (error) {
       errorElement.textContent = error.message;

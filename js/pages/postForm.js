@@ -293,7 +293,7 @@ function setupPostForm(postId, isEditing) {
         savedPost = await createPost(postData);
       }
 
-      history.pushState({}, "", `/post?id=${savedPost.id}`);
+      history.pushState({}, "", `/JavaScript2/post?id=${savedPost.id}`);
 
       window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (error) {
@@ -323,11 +323,6 @@ function setupDeleteButton(postId) {
     }
 
     try {
-      await deletePost(postId);
-
-      history.pushState({}, "", "/feed");
-
-      window.dispatchEvent(new PopStateEvent("popstate"));
     } catch (error) {
       const errorElement = document.querySelector("#post-form-error");
 

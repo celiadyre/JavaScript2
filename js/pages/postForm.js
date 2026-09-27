@@ -27,12 +27,14 @@ export async function postFormPage() {
         app.innerHTML = `
           <p>You cannot edit this post.</p>
         `;
+
         return;
       }
     } catch (error) {
       app.innerHTML = `
         <p>${error.message}</p>
       `;
+
       return;
     }
   }
@@ -47,9 +49,11 @@ function renderPostForm(post, profile, isEditing) {
 
   const imageUrl = post?.media?.url || "";
 
-  const altText = post?.media?.alt || "";
+  const title = post?.title || "";
 
   const caption = post?.body || "";
+
+  const altText = post?.media?.alt || "";
 
   app.innerHTML = `
     <div class="post-form-page">
@@ -171,6 +175,16 @@ function renderPostForm(post, profile, isEditing) {
 
           <input
             type="text"
+            id="post-title"
+            class="post-form-input"
+            placeholder="${isEditing ? "Edit title" : "Add title"}"
+            value="${title}"
+            required
+          >
+
+
+          <input
+            type="text"
             id="post-caption"
             class="post-form-input"
             placeholder="${isEditing ? "Edit caption" : "Add caption"}"
@@ -227,6 +241,8 @@ function renderPostForm(post, profile, isEditing) {
 function setupPostForm(postId, isEditing) {
   const form = document.querySelector("#post-form");
 
+  const titleInput = document.querySelector("#post-title");
+
   const captionInput = document.querySelector("#post-caption");
 
   const altInput = document.querySelector("#post-alt");
@@ -238,20 +254,19 @@ function setupPostForm(postId, isEditing) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const title = titleInput.value.trim();
+
     const caption = captionInput.value.trim();
 
     const altText = altInput.value.trim();
 
     const imageUrl = imageInput.value.trim();
 
-    if (!caption) {
-      errorElement.textContent = "Please add a caption.";
+    if (!title) {
+      errorElement.textContent = "Please add a title.";
 
       return;
     }
-
-    const title =
-      caption.length > 60 ? `${caption.substring(0, 60)}...` : caption;
 
     const postData = {
       title,
@@ -261,7 +276,7 @@ function setupPostForm(postId, isEditing) {
     if (imageUrl) {
       postData.media = {
         url: imageUrl,
-        alt: altText || caption,
+        alt: altText,
       };
     } else {
       postData.media = null;
@@ -293,6 +308,10 @@ function setupPostForm(postId, isEditing) {
 
 function setupDeleteButton(postId) {
   const deleteButton = document.querySelector("#delete-post-button");
+
+  if (!deleteButton) {
+    return;
+  }
 
   deleteButton.addEventListener("click", async () => {
     const confirmed = window.confirm(

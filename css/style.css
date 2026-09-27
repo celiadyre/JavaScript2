@@ -175,6 +175,143 @@ h3 {
   font-size: var(--font-large);
 }
 
+.search-button-icon {
+  width: 28px;
+  height: 28px;
+
+  object-fit: contain;
+}
+
+
+/* Search interface */
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+
+  width: 100%;
+  max-width: var(--app-max-width);
+
+  margin: 0 auto;
+
+  z-index: 100;
+
+  overflow-y: auto;
+
+  background: var(--color-green);
+}
+
+.search-overlay[hidden] {
+  display: none;
+}
+
+.search-header {
+  height: var(--header-height);
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+
+  padding: 0 var(--space-md);
+
+  background: var(--color-green);
+}
+
+.search-close-button {
+  justify-self: start;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+}
+
+.search-interface {
+  min-height: calc(100vh - var(--header-height));
+
+  padding: var(--space-md) 28px var(--space-xl);
+
+  background: var(--color-green);
+}
+
+.post-search-input {
+  width: 100%;
+  height: 78px;
+
+  padding: 0 30px;
+
+  margin-bottom: var(--space-xl);
+
+  border: none;
+  border-radius: 45px;
+  outline: none;
+
+  background: var(--color-beige);
+  color: var(--color-black);
+
+  font-family: var(--font-main);
+  font-size: var(--font-large);
+}
+
+.post-search-input::placeholder {
+  color: var(--color-black);
+  opacity: 1;
+}
+
+.search-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: var(--space-xl) var(--space-lg);
+}
+
+.search-result-card {
+  display: block;
+
+  width: 100%;
+
+  aspect-ratio: 1 / 1;
+
+  border-radius: var(--radius-medium);
+
+  background: var(--color-placeholder);
+
+  overflow: hidden;
+
+  text-decoration: none;
+}
+
+.search-result-card img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.search-result-placeholder {
+  width: 100%;
+  height: 100%;
+
+  background: var(--color-placeholder);
+}
+
+.search-no-results {
+  grid-column: 1 / -1;
+
+  margin: var(--space-lg) 0;
+
+  color: var(--color-white);
+
+  text-align: center;
+
+  font-size: var(--font-medium);
+}
+
 
 /* Login + Register */
 

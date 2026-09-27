@@ -2,6 +2,8 @@ import { getPosts } from "../api/posts/getPosts.js";
 import { reactToPost } from "../api/posts/reactToPost.js";
 import { load } from "../storage/load.js";
 
+let allPosts = [];
+
 export async function feedPage() {
   const app = document.querySelector("#app");
   const profile = load("profile");
@@ -14,10 +16,15 @@ export async function feedPage() {
         <button
           class="feed-search-button"
           id="feed-search-button"
-          aria-label="Search"
+          aria-label="Search posts"
+          aria-expanded="false"
           type="button"
         >
-          <span class="search-icon"></span>
+          <img
+            src="assets/Search.png"
+            alt=""
+            class="search-button-icon"
+          >
         </button>
 
         <div class="feed-logo">
@@ -77,14 +84,93 @@ export async function feedPage() {
 
       </div>
 
+
+      <!-- SEARCH POPUP -->
+
+      <section
+        id="search-overlay"
+        class="search-overlay"
+        aria-label="Search posts"
+        hidden
+      >
+
+        <header class="search-header">
+
+          <button
+            type="button"
+            id="close-search-button"
+            class="search-close-button"
+            aria-label="Close search"
+          >
+            <img
+              src="assets/Search.png"
+              alt=""
+              class="search-button-icon"
+            >
+          </button>
+
+          <div class="feed-logo">
+            <a href="/feed" data-link>
+              <img
+                src="assets/SocialMediaLogo.png"
+                alt="Social Media Logo"
+              >
+            </a>
+          </div>
+
+          <a
+            href="/profile"
+            data-link
+            class="feed-profile"
+            aria-label="My profile"
+          >
+            ${
+              profile?.avatar?.url
+                ? `
+                  <img
+                    src="${profile.avatar.url}"
+                    alt="${profile.avatar.alt || profile.name}"
+                  >
+                `
+                : ""
+            }
+          </a>
+
+        </header>
+
+
+        <div class="search-interface">
+
+          <input
+            type="search"
+            id="post-search-input"
+            class="post-search-input"
+            placeholder="Type here..."
+            autocomplete="off"
+          >
+
+
+          <div
+            id="search-results"
+            class="search-results"
+          ></div>
+
+        </div>
+
+      </section>
+
     </div>
   `;
 
   try {
     const posts = await getPosts();
 
+    allPosts = posts;
+
     renderPosts(posts);
+
     setupPostInteractions();
+    setupSearch();
   } catch (error) {
     document.querySelector("#posts-container").innerHTML = `
       <p class="feed-error">
@@ -249,6 +335,121 @@ function renderPosts(posts) {
           </div>
 
         </article>
+      `;
+    })
+    .join("");
+}
+
+function setupSearch() {
+  const openButton = document.querySelector("#feed-search-button");
+
+  const closeButton = document.querySelector("#close-search-button");
+
+  const overlay = document.querySelector("#search-overlay");
+
+  const searchInput = document.querySelector("#post-search-input");
+
+  openButton.addEventListener("click", () => {
+    overlay.hidden = false;
+
+    openButton.setAttribute("aria-expanded", "true");
+
+    renderSearchResults(allPosts);
+
+    searchInput.focus();
+  });
+
+  closeButton.addEventListener("click", () => {
+    closeSearch();
+  });
+
+  searchInput.addEventListener("input", () => {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+
+    const filteredPosts = filterPosts(allPosts, searchTerm);
+
+    renderSearchResults(filteredPosts);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !overlay.hidden) {
+      closeSearch();
+    }
+  });
+
+  function closeSearch() {
+    overlay.hidden = true;
+
+    openButton.setAttribute("aria-expanded", "false");
+
+    searchInput.value = "";
+  }
+}
+
+function filterPosts(posts, searchTerm) {
+  if (!searchTerm) {
+    return posts;
+  }
+
+  return posts.filter((post) => {
+    const searchableValues = [
+      post.title,
+      post.body,
+      post.media?.alt,
+      post.author?.name,
+      ...(post.tags || []),
+    ];
+
+    return searchableValues.some((value) =>
+      String(value || "")
+        .toLowerCase()
+        .includes(searchTerm),
+    );
+  });
+}
+
+function renderSearchResults(posts) {
+  const container = document.querySelector("#search-results");
+
+  if (!posts.length) {
+    container.innerHTML = `
+      <p class="search-no-results">
+        No posts found.
+      </p>
+    `;
+
+    return;
+  }
+
+  container.innerHTML = posts
+    .map((post) => {
+      const image = post.media?.url;
+
+      const imageAlt = post.media?.alt || post.title || "Post image";
+
+      return `
+        <a
+          href="/post?id=${post.id}"
+          data-link
+          class="search-result-card"
+          aria-label="Open ${post.title || "post"}"
+        >
+
+          ${
+            image
+              ? `
+                <img
+                  src="${image}"
+                  alt="${imageAlt}"
+                >
+              `
+              : `
+                <div class="search-result-placeholder">
+                </div>
+              `
+          }
+
+        </a>
       `;
     })
     .join("");

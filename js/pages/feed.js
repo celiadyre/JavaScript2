@@ -10,12 +10,12 @@ export async function feedPage() {
   const profile = load("profile");
 
   app.innerHTML = `
-    <div class="feed-page">
+    <div class="min-h-screen bg-white pb-24">
 
-      <header class="feed-header">
+      <header class="flex h-[92px] w-full items-center justify-between bg-green px-5">
 
         <button
-          class="feed-search-button"
+          class="flex h-12 w-12 items-center justify-center bg-transparent p-0 hover:opacity-75"
           id="feed-search-button"
           aria-label="Search posts"
           aria-expanded="false"
@@ -24,23 +24,22 @@ export async function feedPage() {
           <img
             src="assets/Search.png"
             alt=""
-            class="search-button-icon"
+            class="h-7 w-7"
           >
         </button>
 
-        <div class="feed-logo">
-          <a href="/feed" data-link>
-            <img
-              src="assets/SocialMediaLogo.png"
-              alt="Social Media Logo"
-            >
-          </a>
-        </div>
+        <a href="/feed" data-link class="flex items-center justify-center">
+          <img
+            src="assets/SocialMediaLogo.png"
+            alt="Social Media Logo"
+            class="h-auto w-[60px]"
+          >
+        </a>
 
         <a
           href="/profile"
           data-link
-          class="feed-profile"
+          class="block h-12 w-12 overflow-hidden rounded-full bg-placeholder"
           aria-label="My profile"
         >
           ${
@@ -49,6 +48,7 @@ export async function feedPage() {
                 <img
                   src="${profile.avatar.url}"
                   alt="${profile.avatar.alt || profile.name}"
+                  class="h-full w-full object-cover"
                 >
               `
               : ""
@@ -58,13 +58,13 @@ export async function feedPage() {
       </header>
 
 
-      <main class="feed-main">
+      <main class="w-full">
 
         <section
           id="posts-container"
-          class="posts-container"
+          class="px-5 py-5"
         >
-          <p class="feed-loading">
+          <p class="p-8 text-center">
             Loading posts...
           </p>
         </section>
@@ -72,14 +72,14 @@ export async function feedPage() {
       </main>
 
 
-      <div class="add-post-container">
+      <div class="fixed bottom-5 left-1/2 z-10 w-[calc(100%-48px)] max-w-[432px] -translate-x-1/2">
 
         <a
           href="/create"
           data-link
-          class="add-post-button"
+          class="grid min-h-14 w-full grid-cols-[50px_1fr_50px] items-center rounded-(--radius-medium) bg-dark-green px-3 text-center text-medium text-beige shadow-lg hover:opacity-90 active:opacity-80"
         >
-          <span class="add-post-plus">+</span>
+          <span class="text-left text-large">+</span>
           <span>Add to feed</span>
         </a>
 
@@ -90,39 +90,38 @@ export async function feedPage() {
 
       <section
         id="search-overlay"
-        class="search-overlay"
+        class="fixed inset-0 z-50 mx-auto w-full max-w-[480px] overflow-scroll bg-green"
         aria-label="Search posts"
         hidden
       >
 
-        <header class="search-header">
+        <header class="flex h-[92px] w-full items-center justify-between px-5">
 
           <button
             type="button"
             id="close-search-button"
-            class="search-close-button"
+            class="flex h-12 w-12 items-center justify-center bg-transparent p-0 hover:opacity-75"
             aria-label="Close search"
           >
             <img
               src="assets/Search.png"
               alt=""
-              class="search-button-icon"
+              class="h-7 w-7"
             >
           </button>
 
-          <div class="feed-logo">
-            <a href="/feed" data-link>
-              <img
-                src="assets/SocialMediaLogo.png"
-                alt="Social Media Logo"
-              >
-            </a>
-          </div>
+          <a href="/feed" data-link class="flex items-center justify-center">
+            <img
+              src="assets/SocialMediaLogo.png"
+              alt="Social Media Logo"
+              class="h-auto w-[60px]"
+            >
+          </a>
 
           <a
             href="/profile"
             data-link
-            class="feed-profile"
+            class="block h-12 w-12 overflow-hidden rounded-full bg-placeholder"
             aria-label="My profile"
           >
             ${
@@ -131,6 +130,7 @@ export async function feedPage() {
                   <img
                     src="${profile.avatar.url}"
                     alt="${profile.avatar.alt || profile.name}"
+                    class="h-full w-full object-cover"
                   >
                 `
                 : ""
@@ -140,20 +140,21 @@ export async function feedPage() {
         </header>
 
 
-        <div class="search-interface">
+        <div class="px-7 pt-5 pb-12">
 
           <input
             type="search"
             id="post-search-input"
-            class="post-search-input"
+            class="mb-12 h-[78px] w-full rounded-full bg-beige px-8 text-large text-black focus:outline-none focus:ring-4 focus:ring-dark-green"
             placeholder="Type here..."
+            aria-label="Search posts"
             autocomplete="off"
           >
 
 
           <div
             id="search-results"
-            class="search-results"
+            class="grid grid-cols-2 gap-8"
           ></div>
 
         </div>
@@ -174,7 +175,7 @@ export async function feedPage() {
     setupSearch();
   } catch (error) {
     document.querySelector("#posts-container").innerHTML = `
-      <p class="feed-error">
+      <p class="p-8 text-center text-small text-red">
         ${error.message}
       </p>
     `;
@@ -188,7 +189,7 @@ function renderPosts(posts) {
 
   if (!postsWithImages.length) {
     container.innerHTML = `
-      <p class="feed-empty">
+      <p class="p-8 text-center">
         No posts with images yet.
       </p>
     `;
@@ -213,15 +214,15 @@ function renderPosts(posts) {
       const commentCount = post._count?.comments || 0;
 
       return `
-        <article class="feed-post">
+        <article class="feed-post mb-12">
 
           <a
             href="/profile?name=${encodeURIComponent(username)}"
             data-link
-            class="post-author"
+            class="mb-5 flex min-h-14 w-full items-center gap-4 rounded-(--radius-medium) bg-beige px-4 py-2 text-large text-black hover:opacity-90"
           >
 
-            <div class="post-author-avatar">
+            <div class="h-9 w-9 min-w-9 overflow-hidden rounded-full bg-placeholder">
 
               ${
                 avatar
@@ -229,6 +230,7 @@ function renderPosts(posts) {
                     <img
                       src="${avatar}"
                       alt="${username}"
+                      class="h-full w-full object-cover"
                     >
                   `
                   : ""
@@ -236,7 +238,7 @@ function renderPosts(posts) {
 
             </div>
 
-            <span class="post-author-name">
+            <span>
               ${username}
             </span>
 
@@ -246,15 +248,15 @@ function renderPosts(posts) {
           <a
             href="/post?id=${post.id}"
             data-link
-            class="post-image-link"
+            class="block"
           >
 
-            <div class="post-image-container">
+            <div class="aspect-square w-full overflow-hidden rounded-(--radius-medium) bg-placeholder">
 
               <img
                 src="${image}"
                 alt="${imageAlt}"
-                class="post-image"
+                class="h-full w-full object-cover"
                 data-remove-on-error=".feed-post"
                 referrerpolicy="no-referrer"
                 loading="lazy"
@@ -265,12 +267,12 @@ function renderPosts(posts) {
           </a>
 
 
-          <div class="post-content">
+          <div class="px-2 pt-3">
 
             ${
               caption
                 ? `
-                  <p class="post-body">
+                  <p class="mb-3 text-small">
                     ${caption}
                   </p>
                 `
@@ -278,10 +280,10 @@ function renderPosts(posts) {
             }
 
 
-            <div class="post-engagement">
+            <div class="mt-3 flex items-center gap-5">
 
               <button
-                class="post-like-button"
+                class="post-like-button flex items-center gap-2 bg-transparent p-0 text-small text-black hover:opacity-75 active:opacity-60"
                 type="button"
                 data-post-id="${post.id}"
                 aria-label="Like post"
@@ -290,7 +292,7 @@ function renderPosts(posts) {
                 <img
                   src="assets/LikeStandard.png"
                   alt="Like"
-                  class="like-icon"
+                  class="like-icon h-6 w-6"
                 >
 
                 <span class="like-count">
@@ -303,17 +305,17 @@ function renderPosts(posts) {
               <a
                 href="/post?id=${post.id}"
                 data-link
-                class="post-comments"
+                class="flex items-center gap-2 text-small text-black hover:opacity-75"
                 aria-label="View comments"
               >
 
                 <img
                   src="assets/Comment.png"
                   alt="Comments"
-                  class="comment-icon"
+                  class="h-6 w-6"
                 >
 
-                <span class="comment-count">
+                <span>
                   ${commentCount}
                 </span>
 
@@ -406,7 +408,7 @@ function renderSearchResults(posts) {
 
   if (!postsWithImages.length) {
     container.innerHTML = `
-      <p class="search-no-results">
+      <p class="col-span-2 my-8 text-center text-medium text-white">
         No posts found.
       </p>
     `;
@@ -424,13 +426,13 @@ function renderSearchResults(posts) {
         <a
           href="/post?id=${post.id}"
           data-link
-          class="search-result-card"
+          class="search-result-card block aspect-square w-full overflow-hidden rounded-(--radius-medium) bg-placeholder hover:opacity-90"
           aria-label="Open ${post.title || "post"}"
         >
           <img
             src="${image}"
             alt="${imageAlt}"
-            class="search-result-image"
+            class="h-full w-full object-cover"
             data-remove-on-error=".search-result-card"
             referrerpolicy="no-referrer"
             loading="lazy"

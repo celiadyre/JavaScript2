@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --font-main: "Instrument Serif", serif;
+
+  --color-dark-green: #3a4e48;
+  --color-green: #6a7b76;
+  --color-light-green: #8b9d83;
+  --color-beige: #beb0a7;
+  --color-red: #d86464;
+  --color-placeholder: #d9d9d9;
+  --color-page: #f5f5f5;
+
+  --text-large: 32px;
+  --text-medium: 20px;
+  --text-small: 13px;
+
+  --radius-medium: 30px;
+}
